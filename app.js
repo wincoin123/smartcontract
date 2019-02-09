@@ -5,6 +5,14 @@ const JSON = require('circular-json');
 Web3 = require('web3');
 web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
+var bodyParser = require('body-parser')
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
 //Create the Ip contract to deploy into ethereum network
 var ipContract = web3.eth.contract([{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getIpList","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"ipAddress","type":"string"},{"name":"currenttime","type":"uint256"}],"name":"updateIpList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"ipArray","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ipList","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getListLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]);
 
@@ -24,7 +32,7 @@ var ip = ipContract.new(
  });
 
 //Get the all blocked Ips from ethereum network
-app.get('/getAllIps', function (req, res) {
+app.get('/getBlockedIps', function (req, res) {
   accounts = web3.eth.accounts
   var defaultAccount = web3.eth.accounts[0];
 
@@ -41,6 +49,14 @@ app.get('/getAllIps', function (req, res) {
 
 });
 
+app.post('/blockIp', function (req, res) {
+   data = req.body;
+   var contractInstance = ipContract.at('0x26dc1682ce637658a8ccf0143b78a9a5aa2e8c1a');
+   console.log(typeof timestamp);
+   console.log(contractInstance.updateIpList.sendTransaction(data.ip,data.timestamp));
+   console.log( data );
+   res.end( JSON.stringify(data));
+})
 //Run the server on port 8081
 var server = app.listen(8081,'0.0.0.0', function () {
    var host = server.address().address
