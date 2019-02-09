@@ -5,13 +5,10 @@ const JSON = require('circular-json');
 Web3 = require('web3');
 web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-app.get('/getAllIps', function (req, res) {
-	accounts = web3.eth.accounts
-	var defaultAccount = web3.eth.accounts[0];
-	var _address = '';
-        var ipContract = web3.eth.contract([{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getIpList","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"ipAddress","type":"string"},{"name":"currenttime","type":"uint256"}],"name":"updateIpList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"ipArray","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ipList","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getListLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]);
+//Create the Ip contract to deploy into ethereum network
+var ipContract = web3.eth.contract([{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getIpList","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"ipAddress","type":"string"},{"name":"currenttime","type":"uint256"}],"name":"updateIpList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"ipArray","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ipList","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getListLength","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]);
 
-
+//Deploy the Ip smart contract into ethereum network
 var ip = ipContract.new(
    {
      from: web3.eth.accounts[0], 
@@ -26,20 +23,25 @@ var ip = ipContract.new(
     }
  });
 
-var contractInstance = ipContract.at('0x26dc1682ce637658a8ccf0143b78a9a5aa2e8c1a');
+//Get the all blocked Ips from ethereum network
+app.get('/getAllIps', function (req, res) {
+  accounts = web3.eth.accounts
+  var defaultAccount = web3.eth.accounts[0];
 
-len = contractInstance.getListLength.call();
-var results =  []
-for(var i=0;i<len;i++){
-   results[i] = contractInstance.getIpList.call(i)
-}
+  var contractInstance = ipContract.at('0x26dc1682ce637658a8ccf0143b78a9a5aa2e8c1a');
 
-     res.send({
+  len = contractInstance.getListLength.call();
+  var results =  []
+  for(var i=0;i<len;i++){
+     results[i] = contractInstance.getIpList.call(i)
+  }
+  res.send({
 	"blockedIps":results
      });
 
 });
 
+//Run the server on port 8081
 var server = app.listen(8081,'0.0.0.0', function () {
    var host = server.address().address
    var port = server.address().port
